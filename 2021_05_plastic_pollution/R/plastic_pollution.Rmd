@@ -1,0 +1,148 @@
+---
+title: "TidyTuesday 2021/05 - Plastic Pollution"
+author: "srfall"
+date: "29.01.2021"
+output:
+  html_document:
+  theme: paper
+highlight: kate
+editor_options:
+  chunk_output_type: console
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.showtext = T, fig.retina = 1)
+```
+
+```{r prep, message=FALSE, warning=FALSE}
+## packages
+library(tidyverse)
+library(systemfonts)
+library(ggplot2)
+library(ggtext)
+library(here)
+theme_set(theme_void(base_family = "Calibri"))
+theme_update(
+  legend.position = "right",
+  plot.margin = margin(25, 35, 15, 35),
+  plot.background = element_rect(fill = "#171717"),
+  plot.title = element_markdown(color = "grey70", size = 27, 
+                                family = "Calibri", face = "bold",
+                                lineheight = 1.2,
+                                hjust = 0.5),
+  plot.subtitle = element_markdown(color = "grey50", size = 16,
+                                   lineheight = 1.2, 
+                                   margin = margin(t = 15, b = 35),
+                                   hjust = 0.5),
+  plot.caption = element_text(color = "grey35", size = 15,
+                              margin = margin(t = 0)),
+  legend.key.size = unit(2, "cm"),
+  legend.text = element_text(color = "grey50", size = 17, face ="bold"),
+  legend.title = element_text(color = "grey50", size = 19, face ="bold")
+)
+```
+
+```{r data}
+plastic <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-26/plastics.csv')
+#, col_types = list(real_cost = col_double(), start_year = col_double(), end_year = col_double()))
+world <- map_data("world")
+```
+
+```{r prep-data}
+# delete "Grand total company"
+total <- plastic[- which(plastic$parent_company == "Grand Total"),]
+total <- total %>% rename(region = country)
+
+
+
+# do are the names the same?
+diff_names <- setdiff(unique(total$region),unique(world$region))
+replacement <- c("Ivory Coast",
+                  "Ecuador",
+                  "NA",
+                  "China",
+                  "Nigeria",
+                  "Taiwan",
+                  "UK",
+                  "USA",
+                  "South Korea",
+                  "UK")
+names(replacement) <- diff_names
+
+total <- 
+  total %>% 
+  mutate(region = str_replace_all(region, replacement))
+total$region[which(total$region == "Taiwan_ Republic of China (ROC)")] <- "Taiwan"
+total$region[which(total$region == "UK of Great Britain & Northern Ireland")] <- "UK"
+
+grand_total <- total %>% group_by(region) %>% 
+  summarise(total = sum(grand_total, na.rm = T),
+            volunteers = sum(unique(volunteers, na.rm = T)),
+            num_events = sum(unique(num_events, na.rm = T)))
+
+
+#correct for observer
+grand_total <- 
+  grand_total %>% 
+  mutate(total_mean_vol = ceiling(total/ (volunteers/num_events)),
+         total_volunteer = ceiling(total/ volunteers))
+grand_total <- grand_total[-which(grand_total$region == "NA"),]
+
+# join
+new_world <- full_join(grand_total, world, by = "region")
+```
+
+```{r total found}
+ggplot(new_world, aes(map_id = region, fill = total))+
+  geom_map(map = new_world)+
+  expand_limits(x = new_world$long, y = new_world$lat)+
+  scale_fill_viridis_c(option = "C", begin = 0, end = 0.8,
+                       na.value = "grey20",
+                       name="Total Pastic found")+
+   labs(title = "Break Free From Plastic",
+              subtitle = "Citizen science initiative to count and document plastic waste | global brand audit 2019 & 2020",
+              caption = "Visualization: srfall | Data source: https://www.breakfreefromplastic.org/")
+
+ggsave(here::here("2021_05_plastic_pollution","output","plastic_total.png"),
+width = 23, height = 12, device = "png")
+```
+
+
+
+```{r plastic per mean observer}
+ggplot(new_world, aes(map_id = region, fill = total_mean_vol))+
+  geom_map(map = new_world)+
+  expand_limits(x = new_world$long, y = new_world$lat)+
+  scale_fill_viridis_c(option = "C", begin = 0, end = 0.8,
+                       na.value = "grey20",
+                       name="Plastic found \nper mean # of volunteers \nat each event")+
+   labs(title = "Break Free From Plastic",
+              subtitle = "Citizen science initiative to count and document plastic waste | global brand audit 2019 & 2020",
+              caption = "Visualization: srfall | Data source: https://www.breakfreefromplastic.org/")
+
+ggsave(here::here("2021_05_plastic_pollution","output","plastic_observer_per_event.png"),
+width = 23, height = 12, device = "png")
+
+```
+
+```{r plastic per volunteer}
+ggplot(new_world, aes(map_id = region, fill = total_volunteer))+
+  geom_map(map = new_world)+
+  expand_limits(x = new_world$long, y = new_world$lat)+
+  scale_fill_viridis_c(option = "C", begin = 0, end = 0.8,
+                       na.value = "grey20",
+                       name="Plastic found \nper volunteer")+
+   labs(title = "Break Free From Plastic",
+              subtitle = "Citizen science initiative to count and document plastic waste | global brand audit 2019 & 2020",
+              caption = "Visualization: srfall | Data source: https://www.breakfreefromplastic.org/")
+
+ggsave(here::here("2021_05_plastic_pollution","output","plastic_per_observer.png"),
+width = 23, height = 12, device = "png")
+```
+
+
+***
+  
+```{r session-info}
+sessionInfo()
+```

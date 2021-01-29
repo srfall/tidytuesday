@@ -5,7 +5,7 @@
 ***
 
 ### [Break Free From Plastic](https://www.breakfreefromplastic.org/)
-### Differnet Data tells different stories 
+### Different Data tells different stories 
 
 ![./2021_05_plastic_pollution/output/plastic_total.png](https://raw.githubusercontent.com/srfall/tidytuesday/main/2021_05_plastic_pollution/output/plastic_total.png)
 

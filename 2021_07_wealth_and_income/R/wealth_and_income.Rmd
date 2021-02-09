@@ -1,0 +1,107 @@
+---
+title: "TidyTuesday 2021/07 - Wealth and Income"
+author: "srfall"
+date: "08.02.2021"
+output:
+  html_document:
+  theme: paper
+highlight: kate
+editor_options:
+  chunk_output_type: console
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, fig.showtext = T, fig.retina = 1)
+```
+
+```{r prep, message=FALSE, warning=FALSE}
+## packages
+if (!require("ggpattern")){
+  remotes::install_github("coolbutuseless/ggpattern")
+}
+if (!require("ggimage")){
+  remotes::install_github("GuangchuangYu/ggimage")
+}
+library(tidyverse)
+library(systemfonts)
+library(ggplot2)
+library(ggpattern)
+library(ggimage)
+library(ggtext)
+library(here)
+theme_set(theme_void())
+theme_update(
+  legend.position = "right",
+  plot.margin = margin(25, 35, 15, 35),
+  plot.background = element_rect(fill = "#171717"),
+  plot.title = element_markdown(color = "grey70", size = 27, 
+                                #family = "Calibri", 
+                                face = "bold",
+                                lineheight = 1.2,
+                                hjust = 0.5),
+  plot.subtitle = element_markdown(color = "grey50", size = 20,
+                                   lineheight = 1.2, 
+                                   margin = margin(t = 15, b = 35),
+                                   hjust = 0.5),
+  plot.caption = element_text(color = "grey70", size = 15,
+                              margin = margin(t = 0)),
+  legend.key.size = unit(2, "cm"),
+  legend.text = element_text(color = "grey50", size = 17, face ="bold"),
+  legend.title = element_text(color = "grey50", size = 19, face ="bold")
+)
+```
+
+```{r data}
+home_owner <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-09/home_owner.csv')
+```
+
+```{r prep-data}
+home <- home_owner %>% group_by(race) %>% summarise(mean = mean(home_owner_pct))
+home$label = paste(as.character(home$race),as.character(round(home$mean,2)),c("%","%","%"))
+```
+
+
+```{r home-owner}
+p1<- ggplot(home, aes(y=mean, x=race)) + 
+  
+  geom_bar_pattern(position="dodge",
+                   stat="identity",
+                   width = 0.7,
+                   pattern_angle = 90,
+                   pattern = "crosshatch",
+                   fill = "bisque1",
+                   pattern_fill            = 'grey40',
+                   pattern_colour          = 'grey30',
+                   pattern_spacing = 0.045,
+                   pattern_density = 0.5,
+                   pattern_size = 2,
+                   pattern_xoffset = 0.002,
+                   pattern_yoffset = 0.008
+  ) +
+  
+  geom_text(aes(label=label),
+            vjust =-1.5 ,
+            colour = "bisque1",
+            fontface = "bold",
+            size=6) +
+  
+  scale_y_continuous(expand = expansion(add=c(0,0.08)))+
+  
+   labs(title = "Wealth inequality",
+              subtitle = "Percentage of home ownership for families in the US by ethnicity 1976-2016")
+
+  ggbackground(p1,here::here("2021_07_wealth_and_income/data/skyline.png"))
+  
+  
+  ggsave(here::here("2021_07_wealth_and_income","output","home_owner.png"),
+width = 10.5, height = 6.34, 
+device = "png")
+
+```
+
+
+***
+  
+```{r session-info}
+sessionInfo()
+```

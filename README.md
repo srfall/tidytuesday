@@ -13,3 +13,9 @@
 
 ![./2021_05_plastic_pollution/output/plastic_observer_per_event.png](https://raw.githubusercontent.com/srfall/tidytuesday/main/2021_05_plastic_pollution/output/plastic_observer_per_event.png)
 ***
+
+### [Wealth inequality](https://apps.urban.org/features/wealth-inequality-charts/)
+### One aspect 
+
+![./2021_07_wealth_and_income/output/home_owner.png](https://raw.githubusercontent.com/srfall/tidytuesday/main/2021_07_wealth_and_income/output/home_owner.png)
+***
